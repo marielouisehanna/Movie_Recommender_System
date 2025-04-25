@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieLens Recommender System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-film me-2"></i>MovieLens Recommender
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/user_recommendations"><i class="fas fa-user me-1"></i> User Recommendations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/compare_algorithms"><i class="fas fa-chart-bar me-1"></i> Algorithm Comparison</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/example_matrix"><i class="fas fa-table me-1"></i> Example Matrix</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold">Movie Recommendation System</h1>
+                    <p class="lead mb-4">Discover movies you'll love with our advanced recommendation algorithms.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a href="/user_recommendations" class="btn btn-primary btn-lg px-4 me-md-2">Get Recommendations</a>
+                        <a href="/compare_algorithms" class="btn btn-outline-light btn-lg px-4">Compare Algorithms</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="{{ url_for('static', filename='img/movie-illustration.svg') }}" class="img-fluid" alt="Movie Illustration">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">{{ user_count }}</div>
+                    <div class="stat-label">Users</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <div class="stat-number">{{ movie_count }}</div>
+                    <div class="stat-label">Movies</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-number">{{ rating_count }}</div>
+                    <div class="stat-label">Ratings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title">
+                    <h2>How It Works</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>User-Based Collaborative Filtering</h3>
+                    <p>Recommends movies based on similar users' preferences. People who liked the same movies as you also enjoyed these.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h3>Item-Based Collaborative Filtering</h3>
+                    <p>Recommends movies similar to ones you've already rated highly. If you liked this movie, you might also enjoy these.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Global Baseline Estimate</h3>
+                    <p>Uses global trends, user biases, and item popularity to make personalized predictions about movies you might enjoy.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 py-4">
+        <div class="container text-center">
+            <p>© 2025 MovieLens Recommender System · Big Data Project</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

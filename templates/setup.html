@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup - MovieLens Recommender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-film me-2"></i>MovieLens Recommender
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="setup-card">
+                    <div class="setup-header">
+                        <i class="fas fa-cog setup-icon"></i>
+                        <h2>Setup Required</h2>
+                    </div>
+                    
+                    <div class="setup-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>MovieLens dataset files not found!</strong>
+                        </div>
+                        
+                        <p>To use this application, you need to download the MovieLens dataset and place the files in the correct directory.</p>
+                        
+                        <h4 class="mt-4">Instructions:</h4>
+                        <ol>
+                            <li>Download the MovieLens dataset from <a href="https://grouplens.org/datasets/movielens/" target="_blank">GroupLens Research</a>. The "small" or "latest-small" version (100K ratings) is recommended for faster processing.</li>
+                            <li>Extract the downloaded ZIP file.</li>
+                            <li>Locate the <code>ratings.csv</code> and <code>movies.csv</code> files in the extracted folder.</li>
+                            <li>Create a <code>static/data</code> directory inside the application folder.</li>
+                            <li>Copy both files into the <code>static/data</code> directory.</li>
+                            <li>Restart the application.</li>
+                        </ol>
+                        
+                        <div class="directory-structure mt-4">
+                            <h5>Expected Directory Structure:</h5>
+                            <pre>
+your_app_folder/
+├── static/
+│   ├── data/
+│   │   ├── ratings.csv
+│   │   └── movies.csv
+│   ├── css/
+│   └── img/
+└── templates/
+                            </pre>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="/" class="btn btn-primary">Refresh & Check Again</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 py-4">
+        <div class="container text-center">
+            <p>© 2025 MovieLens Recommender System · Big Data Project</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
