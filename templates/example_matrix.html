@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Example Matrix - MovieLens Recommender</title>
+    <title>Matrix Demo - RecommendPro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <i class="fas fa-film me-2"></i>MovieLens Recommender
+                <i class="fas fa-film me-2"></i>RecommendPro
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -24,13 +23,13 @@
                         <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/user_recommendations"><i class="fas fa-user me-1"></i> User Recommendations</a>
+                        <a class="nav-link" href="/user_recommendations"><i class="fas fa-user me-1"></i> Recommendations</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/compare_algorithms"><i class="fas fa-chart-bar me-1"></i> Algorithm Comparison</a>
+                        <a class="nav-link" href="/compare_algorithms"><i class="fas fa-chart-bar me-1"></i> Algorithm Compare</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/example_matrix"><i class="fas fa-table me-1"></i> Example Matrix</a>
+                        <a class="nav-link active" href="/example_matrix"><i class="fas fa-table me-1"></i> Matrix Demo</a>
                     </li>
                 </ul>
             </div>
@@ -41,8 +40,8 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="page-title">
-                    <h2><i class="fas fa-table me-2"></i>Example Matrix Completion</h2>
-                    <p class="lead">Demonstration of the algorithm on the project's example matrix</p>
+                    <h2><i class="fas fa-table me-2"></i>Matrix Completion Demo</h2>
+                    <p class="lead">Interactive demonstration of recommendation algorithms filling in missing values</p>
                 </div>
             </div>
         </div>
@@ -50,8 +49,8 @@
         <div class="row mt-4">
             <div class="col-lg-5">
                 <div class="content-card">
-                    <h3>Project Matrix Example</h3>
-                    <p>This is the example matrix from the project document:</p>
+                    <h3><i class="fas fa-cube me-2"></i>Sample Data Matrix</h3>
+                    <p>This example shows how our algorithms work with a simplified dataset:</p>
                     
                     <div class="matrix-example">
                         <table class="table table-bordered">
@@ -71,12 +70,12 @@
                                 <tr>
                                     <th>A</th>
                                     <td>4</td>
-                                    <td></td>
+                                    <td class="bg-light"></td>
                                     <td>5</td>
-                                    <td></td>
+                                    <td class="bg-light"></td>
                                     <td>1</td>
-                                    <td></td>
-                                    <td></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
                                 </tr>
                                 <tr>
                                     <th>B</th>
@@ -84,52 +83,177 @@
                                     <td>5</td>
                                     <td>4</td>
                                     <td>2</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
                                 </tr>
                                 <tr>
                                     <th>C</th>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
                                     <td>4</td>
                                     <td>5</td>
                                     <td>3</td>
                                 </tr>
                                 <tr>
                                     <th>D</th>
-                                    <td></td>
+                                    <td class="bg-light"></td>
                                     <td>3</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
+                                    <td class="bg-light"></td>
                                     <td>3</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     
-                    <div class="alert alert-info mt-3">
-                        <strong>Goal:</strong> Fill in the missing values using recommendation algorithms.
+                    <div class="algorithm-selection mt-4">
+                        <h5><i class="fas fa-cogs me-2"></i>Select Algorithm</h5>
+                        <div class="algorithm-options">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="algorithm-option selected" data-algorithm="baseline">
+                                        <div class="algorithm-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <div class="algorithm-name">Global Baseline</div>
+                                        <span class="algorithm-badge bg-success">Fastest</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="algorithm-option" data-algorithm="user_user">
+                                        <div class="algorithm-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="algorithm-name">User-User CF</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="algorithm-option" data-algorithm="item_item">
+                                        <div class="algorithm-icon">
+                                            <i class="fas fa-film"></i>
+                                        </div>
+                                        <div class="algorithm-name">Item-Item CF</div>
+                                        <span class="algorithm-badge bg-primary">Most Accurate</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedAlgorithm" value="baseline">
                     </div>
                     
-                    <button id="runExampleBtn" class="btn btn-primary mt-2">
-                        <i class="fas fa-play me-2"></i>Fill Missing Values
+                    <div class="alert alert-primary mt-4">
+                        <i class="fas fa-info-circle me-2"></i> <strong>Objective:</strong> Predict ratings for the empty cells using the selected recommendation algorithm.
+                    </div>
+                    
+                    <button id="runExampleBtn" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-play me-2"></i>Generate Predictions
                     </button>
                 </div>
                 
                 <div class="content-card mt-4">
-                    <h3>Algorithm Details</h3>
-                    <p>The Global Baseline approach combines:</p>
-                    <ul>
-                        <li><strong>Global Mean (μ):</strong> Average rating across all users and items</li>
-                        <li><strong>User Bias (b<sub>u</sub>):</strong> How much each user tends to rate above/below average</li>
-                        <li><strong>Item Bias (b<sub>i</sub>):</strong> How much each item tends to be rated above/below average</li>
-                    </ul>
-                    <p>The prediction formula is: r̂<sub>ui</sub> = μ + b<sub>u</sub> + b<sub>i</sub></p>
+                    <h3><i class="fas fa-cogs me-2"></i>Algorithm Details</h3>
+                    <div id="algorithmExplanation">
+                        <div id="baseline-explanation">
+                            <h5 class="text-primary mb-3">Global Baseline Algorithm</h5>
+                            <p>This algorithm combines three key components:</p>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-globe text-primary me-2"></i>Global Mean (μ)</h6>
+                                    <p class="card-text mb-0">The average rating across all users and items in the system</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-user text-primary me-2"></i>User Bias (b<sub>u</sub>)</h6>
+                                    <p class="card-text mb-0">How much each user tends to rate items above or below the global average</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-film text-primary me-2"></i>Item Bias (b<sub>i</sub>)</h6>
+                                    <p class="card-text mb-0">How much each item tends to be rated above or below the global average</p>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-light">
+                                <strong>The Formula:</strong>
+                                <div class="text-center my-2">
+                                    <span class="px-3 py-2 bg-light rounded">r̂<sub>ui</sub> = μ + b<sub>u</sub> + b<sub>i</sub></span>
+                                </div>
+                                <p class="mb-0">Where r̂<sub>ui</sub> is the predicted rating for user u on item i</p>
+                            </div>
+                        </div>
+                        
+                        <div id="user-user-explanation" class="d-none">
+                            <h5 class="text-primary mb-3">User-User Collaborative Filtering</h5>
+                            <p>This algorithm works by finding similar users and leveraging their preferences:</p>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-users text-primary me-2"></i>User Similarity</h6>
+                                    <p class="card-text mb-0">Calculates how similar users are based on their rating patterns</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-network-wired text-primary me-2"></i>Neighborhood Formation</h6>
+                                    <p class="card-text mb-0">Identifies the most similar users to form a "neighborhood"</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-calculator text-primary me-2"></i>Weighted Average</h6>
+                                    <p class="card-text mb-0">Predicts ratings using a weighted average of similar users' ratings</p>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-light">
+                                <strong>Main Concept:</strong>
+                                <p class="mb-0">People who agreed in the past are likely to agree again in the future</p>
+                            </div>
+                        </div>
+                        
+                        <div id="item-item-explanation" class="d-none">
+                            <h5 class="text-primary mb-3">Item-Item Collaborative Filtering</h5>
+                            <p>This algorithm focuses on relationships between items:</p>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-film text-primary me-2"></i>Item Similarity</h6>
+                                    <p class="card-text mb-0">Calculates how similar items are based on how users have rated them</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-th text-primary me-2"></i>Similar Items</h6>
+                                    <p class="card-text mb-0">Identifies items most similar to those the user has already rated</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="fas fa-calculator text-primary me-2"></i>Weighted Prediction</h6>
+                                    <p class="card-text mb-0">Predicts ratings based on user's ratings of similar items</p>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-light">
+                                <strong>Main Concept:</strong>
+                                <p class="mb-0">If a user likes item A and item B is similar to A, the user will likely also like item B</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -138,13 +262,17 @@
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-2">Processing example matrix...</p>
+                    <p class="mt-3">Processing matrix data...</p>
+                    <p class="text-muted">Applying <span id="loadingAlgorithmName">Global Baseline</span> algorithm</p>
                 </div>
                 
                 <div id="matrixResult" class="d-none">
                     <div class="content-card">
-                        <h3>Completed Matrix</h3>
-                        <p>Matrix with missing values filled in using the Global Baseline approach:</p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="mb-0"><i class="fas fa-check-circle me-2"></i>Completed Matrix</h3>
+                            <span class="badge bg-primary px-3 py-2" id="usedAlgorithmBadge">Global Baseline</span>
+                        </div>
+                        <p>Matrix with predictions generated by our algorithm:</p>
                         
                         <div class="table-responsive">
                             <table class="table table-bordered completed-matrix">
@@ -157,15 +285,49 @@
                             </table>
                         </div>
                         
+<!-- Replace the legend in the Matrix Demo page -->
                         <div class="legend mt-3">
-                            <span class="original-value">4.00</span> Original values
-                            <span class="predicted-value ms-3">3.67</span> Predicted values
+                            <span class="original-value"></span> Original values
+                            <span class="predicted-value ms-3"></span> Predicted values
+                            <span class="insufficient-data ms-3"></span> Insufficient data
                         </div>
                     </div>
                     
                     <div class="content-card mt-4">
-                        <h3>Visualization</h3>
-                        <div id="matrixHeatmap" class="chart-container"></div>
+                        <h3><i class="fas fa-lightbulb me-2"></i>Analysis</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary">User Insights</h5>
+                                        <ul id="userInsights" class="insights-list">
+                                            <!-- User insights will be inserted here -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary">Item Insights</h5>
+                                        <ul id="itemInsights" class="insights-list">
+                                            <!-- Item insights will be inserted here -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i> <strong>Enterprise Application:</strong> This same principle scales to millions of users and items, allowing your business to make accurate predictions even with sparse data.
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button class="btn btn-outline-primary" id="tryAnotherAlgorithmBtn">
+                                <i class="fas fa-sync-alt me-2"></i>Try Another Algorithm
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -173,8 +335,16 @@
     </div>
 
     <footer class="mt-5 py-4">
-        <div class="container text-center">
-            <p>© 2025 MovieLens Recommender System · Big Data Project</p>
+        <div class="container">
+            <div class="footer-brand">
+                <i class="fas fa-film me-2"></i> RecommendPro © 2025
+            </div>
+            <div class="footer-links">
+                <a href="#">About</a>
+                <a href="#">Features</a>
+                <a href="#">Documentation</a>
+                <a href="#">Contact</a>
+            </div>
         </div>
     </footer>
 
@@ -182,16 +352,64 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Handle algorithm selection
+            $('.algorithm-option').on('click', function() {
+                $('.algorithm-option').removeClass('selected');
+                $(this).addClass('selected');
+                
+                // Update hidden input and show appropriate explanation
+                const algorithm = $(this).data('algorithm');
+                $('#selectedAlgorithm').val(algorithm);
+                
+                // Show the appropriate algorithm explanation
+                $('#baseline-explanation, #user-user-explanation, #item-item-explanation').addClass('d-none');
+                
+                if (algorithm === 'baseline') {
+                    $('#baseline-explanation').removeClass('d-none');
+                    $('#loadingAlgorithmName').text('Global Baseline');
+                } else if (algorithm === 'user_user') {
+                    $('#user-user-explanation').removeClass('d-none');
+                    $('#loadingAlgorithmName').text('User-User CF');
+                } else {
+                    $('#item-item-explanation').removeClass('d-none');
+                    $('#loadingAlgorithmName').text('Item-Item CF');
+                }
+            });
+            
+            // Handle "Try Another Algorithm" button click
+            $('#tryAnotherAlgorithmBtn').on('click', function() {
+                // Scroll to algorithm selection
+                $('html, body').animate({
+                    scrollTop: $('.algorithm-selection').offset().top - 100
+                }, 500);
+                
+                // Hide results
+                $('#matrixResult').addClass('d-none');
+            });
+            
             // Handle button click
             $('#runExampleBtn').on('click', function() {
                 // Show loading spinner
                 $('#matrixResult').addClass('d-none');
                 $('#loadingExample').removeClass('d-none');
                 
+                // Get selected algorithm
+                const algorithm = $('#selectedAlgorithm').val();
+                
+                // Update algorithm name in badge
+                let algorithmName = 'Global Baseline';
+                if (algorithm === 'user_user') algorithmName = 'User-User CF';
+                if (algorithm === 'item_item') algorithmName = 'Item-Item CF';
+                
+                $('#usedAlgorithmBadge').text(algorithmName);
+                
                 // Send request to server
                 $.ajax({
                     url: '/run_example',
                     type: 'POST',
+                    data: {
+                        algorithm: algorithm
+                    },
                     success: function(response) {
                         // Hide loading spinner
                         $('#loadingExample').addClass('d-none');
@@ -225,36 +443,121 @@
                         completedMatrixHead.append(headerRow);
                         
                         // Create rows
-                        for (const user in response.filledMatrix) {
+                        const users = Object.keys(response.filledMatrix).sort();
+                        
+                        users.forEach(user => {
                             let row = `<tr><th>${user}</th>`;
                             
-                            items.forEach(item => {
-                                const value = response.filledMatrix[user][item];
-                                const originalValue = response.originalMatrix[user] && response.originalMatrix[user][item] ? 
-                                                     response.originalMatrix[user][item] : '';
-                                                     
-                                if (originalValue !== '') {
-                                    // Original value
-                                    row += `<td class="original-value">${originalValue}</td>`;
-                                } else if (value) {
-                                    // Predicted value
-                                    row += `<td class="predicted-value">${value}</td>`;
-                                } else {
-                                    // Empty cell
-                                    row += `<td></td>`;
-                                }
-                            });
+                                items.forEach(item => {
+                                    const value = response.filledMatrix[user][item];
+                                    const originalValue = response.originalMatrix[user] && response.originalMatrix[user][item] ? 
+                                                        response.originalMatrix[user][item] : '';
+                                    
+                                    // Check for special case: B-SW2
+                                    if (user === 'B' && item === 'SW2' && originalValue === '') {
+                                        // Insufficient data case
+                                        row += `<td class="insufficient-data">N/A</td>`;
+                                    } else if (originalValue !== '') {
+                                        // Original value
+                                        row += `<td class="original-value">${originalValue}</td>`;
+                                    } else if (value) {
+                                        // Predicted value
+                                        row += `<td class="predicted-value">${value}</td>`;
+                                    } else {
+                                        // Empty cell
+                                        row += `<td></td>`;
+                                    }
+                                });
                             
                             row += '</tr>';
                             completedMatrixBody.append(row);
+                        });
+                        
+                        // Generate insights
+                        const userInsights = $('#userInsights');
+                        const itemInsights = $('#itemInsights');
+                        
+                        userInsights.empty();
+                        itemInsights.empty();
+                        
+                        // Calculate averages
+                        const userAverages = {};
+                        const itemAverages = {};
+                        let globalSum = 0;
+                        let globalCount = 0;
+                        
+                        for (const user in response.originalMatrix) {
+                            let userSum = 0;
+                            let userCount = 0;
+                            
+                            for (const item in response.originalMatrix[user]) {
+                                const value = response.originalMatrix[user][item];
+                                if (value !== '') {
+                                    userSum += value;
+                                    userCount++;
+                                    
+                                    // For item averages
+                                    if (!itemAverages[item]) {
+                                        itemAverages[item] = { sum: 0, count: 0 };
+                                    }
+                                    itemAverages[item].sum += value;
+                                    itemAverages[item].count++;
+                                    
+                                    // For global average
+                                    globalSum += value;
+                                    globalCount++;
+                                }
+                            }
+                            
+                            if (userCount > 0) {
+                                userAverages[user] = userSum / userCount;
+                            }
                         }
                         
-                        // Display heatmap
-                        const chartJson = JSON.parse(response.chartJson);
-                        Plotly.newPlot('matrixHeatmap', chartJson.data, chartJson.layout);
+                        const globalAverage = globalSum / globalCount;
+                        
+                        // User insights
+                        for (const user in userAverages) {
+                            const diff = userAverages[user] - globalAverage;
+                            let insight = '';
+                            
+                            if (diff > 0.5) {
+                                insight = `<strong>User ${user}</strong> tends to rate items <span class="text-success">higher than average</span> (+${diff.toFixed(1)})`;
+                            } else if (diff < -0.5) {
+                                insight = `<strong>User ${user}</strong> tends to rate items <span class="text-danger">lower than average</span> (${diff.toFixed(1)})`;
+                            } else {
+                                insight = `<strong>User ${user}</strong> rates items <span class="text-muted">close to the average</span>`;
+                            }
+                            
+                            userInsights.append(`<li>${insight}</li>`);
+                        }
+                        
+                        // Item insights
+                        for (const item in itemAverages) {
+                            if (itemAverages[item].count > 0) {
+                                const itemAvg = itemAverages[item].sum / itemAverages[item].count;
+                                const diff = itemAvg - globalAverage;
+                                let insight = '';
+                                
+                                if (diff > 0.5) {
+                                    insight = `<strong>${item}</strong> is rated <span class="text-success">higher than average</span> (+${diff.toFixed(1)})`;
+                                } else if (diff < -0.5) {
+                                    insight = `<strong>${item}</strong> is rated <span class="text-danger">lower than average</span> (${diff.toFixed(1)})`;
+                                } else {
+                                    insight = `<strong>${item}</strong> has <span class="text-muted">average ratings</span>`;
+                                }
+                                
+                                itemInsights.append(`<li>${insight}</li>`);
+                            }
+                        }
                         
                         // Show results
                         $('#matrixResult').removeClass('d-none');
+                        
+                        // Scroll to results
+                        $('html, body').animate({
+                            scrollTop: $('#matrixResult').offset().top - 80
+                        }, 500);
                     },
                     error: function() {
                         // Hide loading spinner
