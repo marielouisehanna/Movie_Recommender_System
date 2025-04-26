@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Setup - RecommendPro</title>
+    <title>Recommendations - RecommendPro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -14,71 +14,188 @@
             <a class="navbar-brand" href="/">
                 <i class="fas fa-film me-2"></i>RecommendPro
             </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/user_recommendations"><i class="fas fa-user me-1"></i> Recommendations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/compare_algorithms"><i class="fas fa-chart-bar me-1"></i> Algorithm Compare</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/example_matrix"><i class="fas fa-table me-1"></i> Matrix Demo</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="container mt-5">
-        <div class="row justify-content-center">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-title">
+                    <h2><i class="fas fa-user me-2"></i>Personalized Recommendations</h2>
+                    <p class="lead">Generate tailored recommendations using our enterprise algorithms</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-lg-4">
+                <div class="card recommendation-form">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Configuration</h3>
+                        <form id="recommendationForm">
+                            <div class="mb-4">
+                                <label for="userId" class="form-label">User ID</label>
+                                <select class="form-select" id="userId" name="userId">
+                                    <option value="" selected disabled>Select a user...</option>
+                                    {% for user in users %}
+                                    <option value="{{ user }}">User {{ user }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text mt-2">Or enter any user ID manually:</div>
+                                <input type="text" class="form-control mt-2" id="userIdCustom" placeholder="Enter user ID manually">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Recommendation Algorithm</label>
+                                <div class="algorithm-selector" id="algorithmSelector">
+                                    <div class="algorithm-option" data-algorithm="user_user">
+                                        <div class="algorithm-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="algorithm-name">User-User CF</div>
+                                    </div>
+                                    <div class="algorithm-option" data-algorithm="item_item">
+                                        <div class="algorithm-icon">
+                                            <i class="fas fa-film"></i>
+                                        </div>
+                                        <div class="algorithm-name">Item-Item CF</div>
+                                        <span class="algorithm-badge bg-primary">Most Accurate</span>
+                                    </div>
+                                    <div class="algorithm-option selected" data-algorithm="baseline">
+                                        <div class="algorithm-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <div class="algorithm-name">Global Baseline</div>
+                                        <span class="algorithm-badge bg-success">Fastest</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="algorithm" id="algorithmInput" value="baseline">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Generate Recommendations</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h3 class="card-title">About Algorithms</h3>
+                        <div class="accordion" id="algorithmAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUserUser">
+                                        User-User Collaborative Filtering
+                                    </button>
+                                </h2>
+                                <div id="collapseUserUser" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                    <div class="accordion-body">
+                                        <p>This algorithm finds users with similar tastes and recommends items they enjoyed. It's effective for:</p>
+                                        <ul>
+                                            <li>Communities with strong user engagement</li>
+                                            <li>Diverse content catalogs</li>
+                                            <li>Personalized discovery experiences</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseItemItem">
+                                        Item-Item Collaborative Filtering
+                                    </button>
+                                </h2>
+                                <div id="collapseItemItem" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                    <div class="accordion-body">
+                                        <p>This algorithm identifies relationships between items based on user behaviors. It's ideal for:</p>
+                                        <ul>
+                                            <li>Large content libraries</li>
+                                            <li>Systems with many users but few ratings per user</li>
+                                            <li>Cross-selling and related item recommendations</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBaseline">
+                                        Global Baseline Estimate
+                                    </button>
+                                </h2>
+                                <div id="collapseBaseline" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                    <div class="accordion-body">
+                                        <p>This algorithm combines global averages with user and item biases. It's best for:</p>
+                                        <ul>
+                                            <li>New users with limited history</li>
+                                            <li>Cold-start scenarios</li>
+                                            <li>High-performance requirements</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="col-lg-8">
-                <div class="setup-card">
-                    <div class="setup-header">
-                        <i class="fas fa-database setup-icon"></i>
-                        <h2>Data Configuration Required</h2>
+                <div id="loadingRecommendations" class="text-center d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Generating personalized recommendations...</p>
+                    <p class="text-muted">This may take a moment depending on the algorithm chosen.</p>
+                </div>
+                
+                <div id="recommendationResults" class="d-none">
+                    <div class="row mb-4">
+                        <div class="col">
+                            <div class="alert alert-primary">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Recommendations for <strong>User <span id="selectedUserId"></span></strong> using 
+                                <strong><span id="selectedAlgorithm">Global Baseline</span></strong> algorithm
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="setup-body">
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>MovieLens dataset files not found in system directory</strong>
-                        </div>
-                        
-                        <p class="lead">To complete your installation, please download and configure the required dataset files.</p>
-                        
-                        <h4 class="mt-4"><i class="fas fa-tasks me-2"></i>Setup Instructions:</h4>
-                        <ol>
-                            <li class="mb-3">Download the MovieLens dataset from <a href="https://grouplens.org/datasets/movielens/" target="_blank" class="fw-bold">GroupLens Research</a>. 
-                            <div class="alert alert-info mt-2">
-                                <small><i class="fas fa-info-circle me-2"></i> The "small" or "latest-small" dataset version (100K ratings) is recommended for faster processing and demonstration purposes.</small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="content-card">
+                                <h4><i class="fas fa-thumbs-up me-2"></i>Recommended Content</h4>
+                                <div id="recommendedMoviesList" class="movie-list"></div>
                             </div>
-                            </li>
-                            <li class="mb-3">Extract the downloaded ZIP file to access the dataset files.</li>
-                            <li class="mb-3">Create a <code>static/data</code> directory inside your RecommendPro application folder.</li>
-                            <li class="mb-3">Copy the <code>ratings.csv</code> and <code>movies.csv</code> files from the extracted folder to the <code>static/data</code> directory.</li>
-                            <li class="mb-3">Restart the application to load the dataset.</li>
-                        </ol>
-                        
-                        <div class="directory-structure mt-4">
-                            <h5><i class="fas fa-folder-tree me-2"></i>Expected Directory Structure:</h5>
-                            <pre>
-recommendpro/
-├── static/
-│   ├── data/
-│   │   ├── ratings.csv   <-- Place here
-│   │   └── movies.csv    <-- Place here
-│   ├── css/
-│   │   └── style.css
-│   └── img/
-│       └── movie-illustration.svg
-└── templates/
-    ├── index.html
-    ├── user_recommendations.html
-    └── ...
-                            </pre>
                         </div>
-                        
-                        <div class="mt-4">
-                            <a href="/" class="btn btn-primary">
-                                <i class="fas fa-sync-alt me-2"></i>Refresh & Check Again
-                            </a>
-                            <a href="https://grouplens.org/datasets/movielens/" target="_blank" class="btn btn-outline-primary ms-2">
-                                <i class="fas fa-download me-2"></i>Download Dataset
-                            </a>
+                        <div class="col-md-6">
+                            <div class="content-card">
+                                <h4><i class="fas fa-history me-2"></i>Previously Rated Content</h4>
+                                <div id="ratedMoviesList" class="movie-list"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="alert alert-primary mt-4">
-                    <i class="fas fa-lightbulb me-2"></i> <strong>Note:</strong> In a production environment, you would typically configure this system to connect to your own user-item interaction database rather than using the MovieLens dataset.
+                <div id="noRecommendations" class="text-center mt-5 d-none">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span>No recommendations found for this user. Please try another user ID or algorithm.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -99,5 +216,136 @@ recommendpro/
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Handle manually entered user IDs
+            $('#userIdCustom').on('input', function() {
+                if ($(this).val().trim() !== '') {
+                    $('#userId').prop('disabled', true);
+                } else {
+                    $('#userId').prop('disabled', false);
+                }
+            });
+
+            $('#userId').on('change', function() {
+                $('#userIdCustom').val('');
+            });
+            
+            // Handle algorithm selection
+            $('.algorithm-option').on('click', function() {
+                $('.algorithm-option').removeClass('selected');
+                $(this).addClass('selected');
+                
+                // Update hidden input with selected algorithm
+                const algorithm = $(this).data('algorithm');
+                $('#algorithmInput').val(algorithm);
+                
+                // Update display text
+                let algorithmName;
+                if (algorithm === 'user_user') {
+                    algorithmName = 'User-User CF';
+                } else if (algorithm === 'item_item') {
+                    algorithmName = 'Item-Item CF';
+                } else {
+                    algorithmName = 'Global Baseline';
+                }
+                $('#selectedAlgorithm').text(algorithmName);
+            });
+
+            // Handle form submission
+            $('#recommendationForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Get user ID (either from dropdown or manual input)
+                let userId = $('#userIdCustom').val().trim() !== '' ? 
+                             $('#userIdCustom').val().trim() : 
+                             $('#userId').val();
+                
+                if (!userId) {
+                    alert('Please select or enter a user ID');
+                    return;
+                }
+                
+                // Get selected algorithm
+                let algorithm = $('#algorithmInput').val();
+                
+                // Show loading spinner
+                $('#recommendationResults').addClass('d-none');
+                $('#noRecommendations').addClass('d-none');
+                $('#loadingRecommendations').removeClass('d-none');
+                
+                // Send request to server
+                $.ajax({
+                    url: '/get_recommendations',
+                    type: 'POST',
+                    data: {
+                        userId: userId,
+                        algorithm: algorithm
+                    },
+                    success: function(response) {
+                        // Hide loading spinner
+                        $('#loadingRecommendations').addClass('d-none');
+                        
+                        if (response.error) {
+                            $('#noRecommendations').removeClass('d-none');
+                            return;
+                        }
+                        
+                        // Display user ID
+                        $('#selectedUserId').text(response.userId);
+                        
+                        // Display recommended movies
+                        const recommendedMoviesList = $('#recommendedMoviesList');
+                        recommendedMoviesList.empty();
+                        
+                        if (response.recommendedMovies.length === 0) {
+                            recommendedMoviesList.append('<div class="alert alert-info">No recommendations available.</div>');
+                        } else {
+                            $.each(response.recommendedMovies, function(i, movie) {
+                                recommendedMoviesList.append(`
+                                    <div class="movie-item">
+                                        <div class="movie-rating">${movie.predicted_rating}</div>
+                                        <div class="movie-info">
+                                            <h5 class="movie-title">${movie.title}</h5>
+                                            <div class="movie-genres">${movie.genres}</div>
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        }
+                        
+                        // Display rated movies
+                        const ratedMoviesList = $('#ratedMoviesList');
+                        ratedMoviesList.empty();
+                        
+                        if (response.ratedMovies.length === 0) {
+                            ratedMoviesList.append('<div class="alert alert-info">No rated content available.</div>');
+                        } else {
+                            $.each(response.ratedMovies, function(i, movie) {
+                                ratedMoviesList.append(`
+                                    <div class="movie-item">
+                                        <div class="movie-rating">${movie.rating}</div>
+                                        <div class="movie-info">
+                                            <h5 class="movie-title">${movie.title}</h5>
+                                            <div class="movie-genres">${movie.genres}</div>
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        }
+                        
+                        // Show results
+                        $('#recommendationResults').removeClass('d-none');
+                    },
+                    error: function() {
+                        // Hide loading spinner
+                        $('#loadingRecommendations').addClass('d-none');
+                        $('#noRecommendations').removeClass('d-none');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
