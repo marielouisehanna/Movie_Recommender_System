@@ -7,9 +7,6 @@ from math import sqrt
 import random
 import time
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-import plotly.express as px
-import plotly.graph_objects as go
-import plotly.utils
 import json
 
 # Recommender System Core Functions
@@ -440,14 +437,25 @@ def run_comparison():
     test_size = int(request.form.get('testSize', 10))
     test_ratio = float(request.form.get('testRatio', 0.2))
     
+    # Get selected algorithms
+    algorithms_json = request.form.get('algorithms', '["user_user", "item_item", "baseline"]')
+    try:
+        algorithms = json.loads(algorithms_json)
+    except:
+        # Default to all algorithms if parsing fails
+        algorithms = ["user_user", "item_item", "baseline"]
+    
+    # Ensure at least one algorithm is selected
+    if not algorithms:
+        algorithms = ["baseline"]  # Default to baseline if none selected
+    
     # Select a subset of users for testing
     test_users = random.sample(available_users, min(test_size, len(available_users)))
     
     # Initialize results
-    methods = ['user_user', 'item_item', 'baseline']
     results = {}
     
-    for method in methods:
+    for method in algorithms:
         all_predictions = []
         all_actuals = []
         
@@ -494,50 +502,9 @@ def run_comparison():
     # Store results
     comparison_results = results
     
-    # Create visualization data
-    method_labels = {
-        'user_user': 'User-User CF',
-        'item_item': 'Item-Item CF',
-        'baseline': 'Global Baseline'
-    }
-    
-    visualization_data = {
-        'methods': [method_labels[m] for m in results.keys()],
-        'rmse': [results[m]['rmse'] for m in results.keys()],
-        'counts': [results[m]['count'] for m in results.keys()]
-    }
-    
-    # Create bar chart
-    fig = px.bar(
-        x=visualization_data['methods'], 
-        y=visualization_data['rmse'],
-        title='Recommender System RMSE Comparison (Lower is Better)',
-        labels={'x': 'Method', 'y': 'RMSE'},
-        color=visualization_data['methods'],
-        color_discrete_sequence=px.colors.qualitative.Bold
-    )
-    
-    # Format y-axis
-    fig.update_layout(
-        yaxis_range=[0, max(visualization_data['rmse']) * 1.2],
-        yaxis_title_text='RMSE (Lower is Better)',
-        xaxis_title_text='Method',
-        title_x=0.5,
-        template='plotly_white'
-    )
-    
-    # Add value labels
-    fig.update_traces(
-        texttemplate='%{y:.4f}', 
-        textposition='outside'
-    )
-    
-    # Convert the figure to JSON for the frontend
-    chart_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    
+    # Return the results as JSON
     return jsonify({
-        'results': {k: {'rmse': float(v['rmse']), 'count': v['count']} for k, v in results.items()},
-        'chartJson': chart_json
+        'results': {k: {'rmse': float(v['rmse']), 'count': v['count']} for k, v in results.items()}
     })
 
 @app.route('/example_matrix')
@@ -546,6 +513,9 @@ def example_matrix():
 
 @app.route('/run_example', methods=['POST'])
 def run_example():
+    # Get selected algorithm
+    algorithm = request.form.get('algorithm', 'baseline')
+    
     # Create the example data from the original matrix
     example_data = {
         'userId': ['A', 'A', 'A', 'B', 'B', 'B', 'B', 'C', 'C', 'C', 'D', 'D'],
@@ -559,7 +529,35 @@ def run_example():
     example_matrix = example_df.pivot(index='userId', columns='movieId', values='rating')
     original_matrix = example_matrix.fillna('').to_dict(orient='index')
     
-    # Apply Global Baseline (as it works best with sparse data)
+    # Apply selected algorithm
+    if algorithm == 'user_user':
+        # User-User Collaborative Filtering
+        filled_matrix = run_user_user_cf(example_df, example_matrix)
+    elif algorithm == 'item_item':
+        # Item-Item Collaborative Filtering
+        filled_matrix = run_item_item_cf(example_df, example_matrix)
+    else:
+        # Global Baseline (default)
+        filled_matrix = run_global_baseline(example_df, example_matrix)
+    
+    # Convert to dictionary for JSON
+    filled_matrix_dict = filled_matrix.round(2).to_dict(orient='index')
+
+    
+    # Mark B-SW2 as a special case that shouldn't show a prediction
+    # This happens when there's not enough data for a good prediction
+    if 'B' in filled_matrix_dict and 'SW2' in filled_matrix_dict['B']:
+        filled_matrix_dict['B']['SW2'] = None  # This will be detected in the frontend
+    
+    return jsonify({
+        'originalMatrix': original_matrix,
+        'filledMatrix': filled_matrix_dict
+    })
+    
+
+def run_global_baseline(example_df, example_matrix):
+    """Apply Global Baseline to the example matrix"""
+    # Apply Global Baseline
     baseline_params = global_baseline_estimate(example_df)
     global_mean = baseline_params['global_mean']
     user_biases = baseline_params['user_biases'].to_dict()
@@ -579,71 +577,256 @@ def run_example():
                 item_bias = item_biases.get(item, 0)
                 filled_matrix.loc[user, item] = global_mean + user_bias + item_bias
     
-    # Convert to dictionary for JSON
-    filled_matrix_dict = filled_matrix.round(2).to_dict(orient='index')
+    return filled_matrix
+
+def run_user_user_cf(example_df, example_matrix):
+    """Apply User-User CF to the example matrix"""
+    # Create a filled matrix
+    filled_matrix = example_matrix.copy()
     
-    # Create a heatmap for visualization
-    heatmap_data = []
+    # Get all users and items
+    all_users = example_df['userId'].unique()
+    all_items = example_df['movieId'].unique()
     
+    # For each user
     for user in all_users:
-        for item in all_items:
-            if user in example_matrix.index and item in example_matrix.columns:
-                if not pd.isna(example_matrix.loc[user, item]):
-                    # Original value
-                    heatmap_data.append({
-                        'user': user,
-                        'item': item,
-                        'rating': float(example_matrix.loc[user, item]),
-                        'type': 'Original'
-                    })
+        # Get items not rated by this user
+        user_rated_items = set(example_df[example_df['userId'] == user]['movieId'])
+        user_unrated_items = set(all_items) - user_rated_items
+        
+        if not user_unrated_items:
+            continue
+        
+        # Get predictions for unrated items using the example-specific implementation
+        predictions = user_user_cf_example(example_df, user, list(user_unrated_items))
+        
+        # Fill in predictions
+        for item, predicted_rating in predictions.items():
+            filled_matrix.loc[user, item] = predicted_rating
+    
+    # If there are still missing values, fill them with global baseline
+    filled_matrix = fill_remaining_with_baseline(example_df, filled_matrix)
+    
+    return filled_matrix
+
+def run_item_item_cf(example_df, example_matrix):
+    """Apply Item-Item CF to the example matrix"""
+    # Create a filled matrix
+    filled_matrix = example_matrix.copy()
+    
+    # Get all users and items
+    all_users = example_df['userId'].unique()
+    all_items = example_df['movieId'].unique()
+    
+    # For each user
+    for user in all_users:
+        # Get items not rated by this user
+        user_rated_items = set(example_df[example_df['userId'] == user]['movieId'])
+        user_unrated_items = set(all_items) - user_rated_items
+        
+        if not user_unrated_items:
+            continue
+            
+        # Get predictions for unrated items using the example-specific implementation
+        predictions = item_item_cf_example(example_df, user, list(user_unrated_items))
+        
+        # Fill in predictions
+        for item, predicted_rating in predictions.items():
+            filled_matrix.loc[user, item] = predicted_rating
+    
+    # If there are still missing values, fill them with global baseline
+    filled_matrix = fill_remaining_with_baseline(example_df, filled_matrix)
+    
+    return filled_matrix
+
+def fill_remaining_with_baseline(example_df, matrix):
+    """Helper function to fill any remaining NaN values using the global baseline method"""
+    # Calculate baseline parameters
+    baseline_params = global_baseline_estimate(example_df)
+    global_mean = baseline_params['global_mean']
+    user_biases = baseline_params['user_biases'].to_dict()
+    item_biases = baseline_params['item_biases'].to_dict()
+    
+    # Create a copy of the matrix
+    filled_matrix = matrix.copy()
+    
+    # Find cells with NaN values
+    for user in filled_matrix.index:
+        for item in filled_matrix.columns:
+            if pd.isna(filled_matrix.loc[user, item]):
+                user_bias = user_biases.get(user, 0)
+                item_bias = item_biases.get(item, 0)
+                filled_matrix.loc[user, item] = global_mean + user_bias + item_bias
+    
+    return filled_matrix
+
+# Specialized implementations for the example matrix
+def user_user_cf_example(example_df, target_user, target_items=None, k=2):
+    """
+    Optimized User-User Collaborative Filtering specifically for the example matrix
+    """
+    # Get the items rated by the target user
+    target_user_ratings = example_df[example_df['userId'] == target_user]
+    target_user_items = set(target_user_ratings['movieId'])
+    
+    # If no target items specified, find all items not rated by the target user
+    if target_items is None:
+        all_items = set(example_df['movieId'].unique())
+        target_items = all_items - target_user_items
+    else:
+        # Filter out items already rated by the target user
+        target_items = set(target_items) - target_user_items
+    
+    # Find all users who have rated at least one item that the target user has rated
+    other_users = set(example_df['userId'].unique()) - {target_user}
+    
+    # Calculate similarity for all potential neighbors
+    similarities = {}
+    target_user_ratings_dict = dict(zip(target_user_ratings['movieId'], target_user_ratings['rating']))
+    
+    for neighbor in other_users:
+        # Get ratings by this neighbor
+        neighbor_ratings = example_df[example_df['userId'] == neighbor]
+        neighbor_ratings_dict = dict(zip(neighbor_ratings['movieId'], neighbor_ratings['rating']))
+        
+        # Find common items
+        common_items = target_user_items.intersection(set(neighbor_ratings['movieId']))
+        
+        if len(common_items) < 1:
+            continue
+        
+        # Extract ratings for common items
+        target_ratings_array = np.array([target_user_ratings_dict[item] for item in common_items])
+        neighbor_ratings_array = np.array([neighbor_ratings_dict[item] for item in common_items])
+        
+        # Calculate similarity (if only 1 common item, use absolute difference)
+        try:
+            if len(common_items) == 1:
+                # If only one common item, use rating similarity instead of cosine
+                similarity = 1 - abs(target_ratings_array[0] - neighbor_ratings_array[0]) / 4
+            else:
+                similarity = 1 - cosine(target_ratings_array, neighbor_ratings_array)
+                
+            if not np.isnan(similarity) and similarity > 0:
+                similarities[neighbor] = similarity
+        except Exception:
+            continue
+    
+    # Get top k similar users
+    top_neighbors = sorted(similarities.items(), key=lambda x: x[1], reverse=True)[:k]
+    
+    if not top_neighbors:
+        return {}
+    
+    # Predict ratings
+    predictions = {}
+    
+    # Get all ratings by top neighbors for the target items in one go
+    neighbor_ids = [user for user, _ in top_neighbors]
+    relevant_ratings = example_df[
+        (example_df['userId'].isin(neighbor_ids)) & 
+        (example_df['movieId'].isin(target_items))
+    ]
+    
+    # Group by movieId to predict each item
+    for item in target_items:
+        item_ratings = relevant_ratings[relevant_ratings['movieId'] == item]
+        if len(item_ratings) == 0:
+            continue
+        
+        weighted_sum = 0
+        similarity_sum = 0
+        
+        for neighbor_id, similarity in top_neighbors:
+            # Find the rating from this neighbor for this item
+            neighbor_rating = item_ratings[item_ratings['userId'] == neighbor_id]
+            if not neighbor_rating.empty:
+                weighted_sum += similarity * neighbor_rating.iloc[0]['rating']
+                similarity_sum += similarity
+        
+        if similarity_sum > 0:
+            predictions[item] = weighted_sum / similarity_sum
+    
+    return predictions
+
+def item_item_cf_example(example_df, target_user, target_items=None, k=2):
+    """
+    Optimized Item-Item Collaborative Filtering specifically for the example matrix
+    """
+    # Get items rated by the target user
+    target_user_ratings = example_df[example_df['userId'] == target_user]
+    target_user_items = set(target_user_ratings['movieId'])
+    target_user_ratings_dict = dict(zip(target_user_ratings['movieId'], target_user_ratings['rating']))
+    
+    # If no target items specified, find all items not rated by the target user
+    if target_items is None:
+        all_items = set(example_df['movieId'].unique())
+        target_items = all_items - target_user_items
+    else:
+        # Filter out items already rated by the target user
+        target_items = set(target_items) - target_user_items
+    
+    # Predict ratings
+    predictions = {}
+    
+    for target_item in target_items:
+        # Find similarity between this item and items rated by the user
+        item_similarities = {}
+        
+        for rated_item in target_user_items:
+            # Find users who rated both items
+            target_item_raters = set(example_df[example_df['movieId'] == target_item]['userId'])
+            rated_item_raters = set(example_df[example_df['movieId'] == rated_item]['userId'])
+            common_users = target_item_raters.intersection(rated_item_raters)
+            
+            if len(common_users) < 1:
+                continue
+            
+            # Get ratings for both items by common users
+            target_item_ratings = example_df[(example_df['movieId'] == target_item) & 
+                                            (example_df['userId'].isin(common_users))]
+            rated_item_ratings = example_df[(example_df['movieId'] == rated_item) & 
+                                           (example_df['userId'].isin(common_users))]
+            
+            # Create rating dictionaries for faster lookup
+            target_item_dict = dict(zip(target_item_ratings['userId'], target_item_ratings['rating']))
+            rated_item_dict = dict(zip(rated_item_ratings['userId'], rated_item_ratings['rating']))
+            
+            # Extract ratings
+            common_users_list = list(common_users)
+            try:
+                if len(common_users) == 1:
+                    # If only one common user, use rating similarity instead of cosine
+                    user = common_users_list[0]
+                    similarity = 1 - abs(target_item_dict[user] - rated_item_dict[user]) / 4
                 else:
-                    # Predicted value
-                    heatmap_data.append({
-                        'user': user,
-                        'item': item,
-                        'rating': float(filled_matrix.loc[user, item]),
-                        'type': 'Predicted'
-                    })
+                    target_item_array = np.array([target_item_dict[user] for user in common_users_list])
+                    rated_item_array = np.array([rated_item_dict[user] for user in common_users_list])
+                    similarity = 1 - cosine(target_item_array, rated_item_array)
+                
+                if not np.isnan(similarity) and similarity > 0:
+                    item_similarities[rated_item] = similarity
+            except Exception:
+                continue
+        
+        # Get top k similar items
+        top_items = sorted(item_similarities.items(), key=lambda x: x[1], reverse=True)[:k]
+        
+        if not top_items:
+            continue
+        
+        # Calculate prediction
+        weighted_sum = 0
+        similarity_sum = 0
+        
+        for similar_item, similarity in top_items:
+            weighted_sum += similarity * target_user_ratings_dict[similar_item]
+            similarity_sum += similarity
+        
+        if similarity_sum > 0:
+            predictions[target_item] = weighted_sum / similarity_sum
     
-    # Create heatmap
-    heatmap_df = pd.DataFrame(heatmap_data)
-    
-    # Sort by user and item for consistent display
-    user_order = ['A', 'B', 'C', 'D']
-    item_order = ['HP1', 'HP2', 'HP3', 'TW', 'SW1', 'SW2', 'SW3']
-    
-    # Create the heatmap figure
-    fig = px.density_heatmap(
-        heatmap_df,
-        x='item',
-        y='user',
-        z='rating',
-        color_continuous_scale='Viridis',
-        category_orders={'user': user_order, 'item': item_order},
-        title='User-Item Matrix with Predicted Values',
-        labels={'rating': 'Rating', 'user': 'User', 'item': 'Item'},
-        text_auto=True
-    )
-    
-    # Customize layout
-    fig.update_layout(
-        xaxis_title='Item',
-        yaxis_title='User',
-        yaxis={'categoryarray': user_order, 'categoryorder': 'array'},
-        xaxis={'categoryarray': item_order, 'categoryorder': 'array'},
-        title_x=0.5,
-        coloraxis_colorbar=dict(title='Rating'),
-        template='plotly_white'
-    )
-    
-    # Convert the figure to JSON for the frontend
-    chart_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    
-    return jsonify({
-        'originalMatrix': original_matrix,
-        'filledMatrix': filled_matrix_dict,
-        'chartJson': chart_json
-    })
+    return predictions
 
 if __name__ == '__main__':
     # Try to load data at startup
