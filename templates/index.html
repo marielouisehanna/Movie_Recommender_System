@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RecommendPro - Enterprise Movie Recommendation System</title>
+    <title>Setup - RecommendPro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -14,161 +14,71 @@
             <a class="navbar-brand" href="/">
                 <i class="fas fa-film me-2"></i>RecommendPro
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/"><i class="fas fa-home me-1"></i> Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/user_recommendations"><i class="fas fa-user me-1"></i> Recommendations</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/compare_algorithms"><i class="fas fa-chart-bar me-1"></i> Algorithm Compare</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/example_matrix"><i class="fas fa-table me-1"></i> Matrix Demo</a>
-                    </li>
-                </ul>
-            </div>
         </div>
     </nav>
 
-    <div class="hero-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold">Enterprise Recommendation Engine</h1>
-                    <p class="lead mb-4">Drive engagement and increase revenue with our powerful AI-driven recommendation algorithms.</p>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                        <a href="/user_recommendations" class="btn btn-primary btn-lg px-4 me-md-2">Try Recommendations</a>
-                        <a href="/compare_algorithms" class="btn btn-outline-light btn-lg px-4">Compare Algorithms</a>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <img src="{{ url_for('static', filename='img/movie-illustration.svg') }}" class="img-fluid" alt="Movie Illustration">
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="container mt-5">
-        <div class="row text-center">
-            <div class="col-md-4 mb-4">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="setup-card">
+                    <div class="setup-header">
+                        <i class="fas fa-database setup-icon"></i>
+                        <h2>Data Configuration Required</h2>
                     </div>
-                    <div class="stat-number">{{ user_count }}</div>
-                    <div class="stat-label">USERS</div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-film"></i>
+                    
+                    <div class="setup-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>MovieLens dataset files not found in system directory</strong>
+                        </div>
+                        
+                        <p class="lead">To complete your installation, please download and configure the required dataset files.</p>
+                        
+                        <h4 class="mt-4"><i class="fas fa-tasks me-2"></i>Setup Instructions:</h4>
+                        <ol>
+                            <li class="mb-3">Download the MovieLens dataset from <a href="https://grouplens.org/datasets/movielens/" target="_blank" class="fw-bold">GroupLens Research</a>. 
+                            <div class="alert alert-info mt-2">
+                                <small><i class="fas fa-info-circle me-2"></i> The "small" or "latest-small" dataset version (100K ratings) is recommended for faster processing and demonstration purposes.</small>
+                            </div>
+                            </li>
+                            <li class="mb-3">Extract the downloaded ZIP file to access the dataset files.</li>
+                            <li class="mb-3">Create a <code>static/data</code> directory inside your RecommendPro application folder.</li>
+                            <li class="mb-3">Copy the <code>ratings.csv</code> and <code>movies.csv</code> files from the extracted folder to the <code>static/data</code> directory.</li>
+                            <li class="mb-3">Restart the application to load the dataset.</li>
+                        </ol>
+                        
+                        <div class="directory-structure mt-4">
+                            <h5><i class="fas fa-folder-tree me-2"></i>Expected Directory Structure:</h5>
+                            <pre>
+recommendpro/
+├── static/
+│   ├── data/
+│   │   ├── ratings.csv   <-- Place here
+│   │   └── movies.csv    <-- Place here
+│   ├── css/
+│   │   └── style.css
+│   └── img/
+│       └── movie-illustration.svg
+└── templates/
+    ├── index.html
+    ├── user_recommendations.html
+    └── ...
+                            </pre>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-sync-alt me-2"></i>Refresh & Check Again
+                            </a>
+                            <a href="https://grouplens.org/datasets/movielens/" target="_blank" class="btn btn-outline-primary ms-2">
+                                <i class="fas fa-download me-2"></i>Download Dataset
+                            </a>
+                        </div>
                     </div>
-                    <div class="stat-number">{{ movie_count }}</div>
-                    <div class="stat-label">MOVIES</div>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-number">{{ rating_count }}</div>
-                    <div class="stat-label">RATINGS</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center">
-                    <h2>Enterprise-Grade Recommendation Algorithms</h2>
-                    <p>Our platform offers multiple recommendation algorithms to suit your specific business needs</p>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>User-Based Collaborative Filtering</h3>
-                    <p>Identifies users with similar preferences and recommends content they've enjoyed. Perfect for businesses with loyal user communities and diverse product catalogs.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-film"></i>
-                    </div>
-                    <h3>Item-Based Collaborative Filtering</h3>
-                    <p>Identifies relationships between items based on user behavior patterns. Ideal for large inventories and businesses seeking to increase cross-selling opportunities.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Global Baseline Estimate</h3>
-                    <p>Balances user preferences with global popularity trends. Best for new products, expanding markets, or situations with limited user history data.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center">
-                    <h2>Why Choose RecommendPro</h2>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-md-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-tachometer-alt"></i>
-                    </div>
-                    <h3>High Performance</h3>
-                    <p>Optimized algorithms deliver recommendations in milliseconds, even with millions of items.</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-cogs"></i>
-                    </div>
-                    <h3>Customizable</h3>
-                    <p>Choose between multiple algorithms to fit your specific business requirements.</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-server"></i>
-                    </div>
-                    <h3>Scalable</h3>
-                    <p>Handles growing data volumes with consistent performance and reliability.</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <h3>Analytics</h3>
-                    <p>Comprehensive metrics to measure algorithm performance and business impact.</p>
+                
+                <div class="alert alert-primary mt-4">
+                    <i class="fas fa-lightbulb me-2"></i> <strong>Note:</strong> In a production environment, you would typically configure this system to connect to your own user-item interaction database rather than using the MovieLens dataset.
                 </div>
             </div>
         </div>
@@ -189,6 +99,5 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
