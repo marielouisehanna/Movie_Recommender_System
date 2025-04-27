@@ -286,11 +286,7 @@
                         </div>
                         
 <!-- Replace the legend in the Matrix Demo page -->
-                        <div class="legend mt-3">
-                            <span class="original-value"></span> Original values
-                            <span class="predicted-value ms-3"></span> Predicted values
-                            <span class="insufficient-data ms-3"></span> Insufficient data
-                        </div>
+
                     </div>
                     
                     <div class="content-card mt-4">
@@ -449,26 +445,25 @@
                             let row = `<tr><th>${user}</th>`;
                             
                                 items.forEach(item => {
-                                    const value = response.filledMatrix[user][item];
-                                    const originalValue = response.originalMatrix[user] && response.originalMatrix[user][item] ? 
-                                                        response.originalMatrix[user][item] : '';
-                                    
-                                    // Check for special case: B-SW2
-                                    if (user === 'B' && item === 'SW2' && originalValue === '') {
-                                        // Insufficient data case
-                                        row += `<td class="insufficient-data">N/A</td>`;
-                                    } else if (originalValue !== '') {
-                                        // Original value
-                                        row += `<td class="original-value">${originalValue}</td>`;
-                                    } else if (value) {
-                                        // Predicted value
-                                        row += `<td class="predicted-value">${value}</td>`;
-                                    } else {
-                                        // Empty cell
-                                        row += `<td></td>`;
-                                    }
-                                });
-                            
+                                const value = response.filledMatrix[user][item];
+                                const originalValue = response.originalMatrix[user] && response.originalMatrix[user][item] ? 
+                                                    response.originalMatrix[user][item] : '';
+                                
+                                // Check if this is an original value or a prediction
+                                if (originalValue !== '') {
+                                    // Original value
+                                    row += `<td class="original-value">${originalValue}</td>`;
+                                } else if (value === null) {
+                                    // Insufficient data case (when backend returns null for low confidence predictions)
+                                    row += `<td class="insufficient-data">N/A</td>`;
+                                } else if (value) {
+                                    // Predicted value
+                                    row += `<td class="predicted-value">${value}</td>`;
+                                } else {
+                                    // Empty cell
+                                    row += `<td></td>`;
+                                }
+                            });
                             row += '</tr>';
                             completedMatrixBody.append(row);
                         });
