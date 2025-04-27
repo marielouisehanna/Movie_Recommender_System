@@ -117,9 +117,12 @@ def user_user_cf(ratings_df, target_user, target_items=None, k=20):
         return {}
     
     # For efficiency, only process a subset of the target items if there are too many
+# For efficiency, only process a subset of the target items if there are too many
     if len(target_items) > 100:
+        # Filter ratings to only include target items first (more efficient)
+        target_ratings = ratings_df[ratings_df['movieId'].isin(target_items)]
         # Get the most popular items from the target items
-        item_popularity = ratings_df[ratings_df['movieId'].isin(target_items)]['movieId'].value_counts()
+        item_popularity = target_ratings['movieId'].value_counts()
         # Take top 100 most popular items
         target_items = set(item_popularity.head(100).index)
     
@@ -436,6 +439,19 @@ def run_comparison():
     # Get test parameters
     test_size = int(request.form.get('testSize', 10))
     test_ratio = float(request.form.get('testRatio', 0.2))
+# Get and validate test parameters
+    try:
+        test_size = int(request.form.get('testSize', 10))
+        if test_size <= 0:
+            test_size = 10  # Use default if invalid
+            
+        test_ratio = float(request.form.get('testRatio', 0.2))
+        if test_ratio <= 0 or test_ratio >= 1:
+            test_ratio = 0.2  # Use default if invalid
+    except ValueError:
+        # Handle conversion errors
+        test_size = 10
+    test_ratio = 0.2
     
     # Get selected algorithms
     algorithms_json = request.form.get('algorithms', '["user_user", "item_item", "baseline"]')
@@ -542,13 +558,34 @@ def run_example():
     
     # Convert to dictionary for JSON
     filled_matrix_dict = filled_matrix.round(2).to_dict(orient='index')
+    def calculate_prediction_confidence(example_df, user, item, prediction_method):
+        """Calculate a confidence score for a prediction"""
+        # Count how many ratings contributed to this prediction
+        if prediction_method == 'user_user':
+            # For user-user, check how many users rated this item
+            user_count = len(example_df[example_df['movieId'] == item]['userId'].unique())
+            # Normalize to a 0-1 scale
+            confidence = min(1.0, user_count / 3.0)
+        elif prediction_method == 'item_item':
+            # For item-item, check how many items this user has rated in the same genre
+            # (simplified example - would need genre info for real implementation)
+            item_count = len(example_df[example_df['userId'] == user]['movieId'].unique())
+            confidence = min(1.0, item_count / 3.0)
+        else:
+            # For baseline, confidence is based on overall data availability
+            confidence = 0.5  # Moderate confidence by default
+            
+        return confidence
 
+    # Then in run_example:
+    for user in filled_matrix.index:
+        for item in filled_matrix.columns:
+            if pd.isna(example_matrix.loc[user, item]):
+                confidence = calculate_prediction_confidence(example_df, user, item, algorithm)
+                if confidence < 0.3:  # Low confidence threshold
+                    filled_matrix_dict[user][item] = None  # Show as unpredictable
     
-    # Mark B-SW2 as a special case that shouldn't show a prediction
-    # This happens when there's not enough data for a good prediction
-    if 'B' in filled_matrix_dict and 'SW2' in filled_matrix_dict['B']:
-        filled_matrix_dict['B']['SW2'] = None  # This will be detected in the frontend
-    
+
     return jsonify({
         'originalMatrix': original_matrix,
         'filledMatrix': filled_matrix_dict
@@ -584,6 +621,9 @@ def run_user_user_cf(example_df, example_matrix):
     # Create a filled matrix
     filled_matrix = example_matrix.copy()
     
+    # Calculate baseline parameters once - for efficiency
+    baseline_params = global_baseline_estimate(example_df)
+    
     # Get all users and items
     all_users = example_df['userId'].unique()
     all_items = example_df['movieId'].unique()
@@ -600,14 +640,25 @@ def run_user_user_cf(example_df, example_matrix):
         # Get predictions for unrated items using the example-specific implementation
         predictions = user_user_cf_example(example_df, user, list(user_unrated_items))
         
-        # Fill in predictions
-        for item, predicted_rating in predictions.items():
-            filled_matrix.loc[user, item] = predicted_rating
-    
-    # If there are still missing values, fill them with global baseline
-    filled_matrix = fill_remaining_with_baseline(example_df, filled_matrix)
+        # Fill in predictions where available
+        for item in user_unrated_items:
+            if item in predictions:
+                filled_matrix.loc[user, item] = predictions[item]
+            else:
+                # Use baseline for items that couldn't be predicted with CF
+                filled_matrix.loc[user, item] = apply_baseline_prediction(baseline_params, user, item)
     
     return filled_matrix
+
+def apply_baseline_prediction(baseline_params, user, item):
+    """Helper to apply baseline prediction for a specific user-item pair"""
+    global_mean = baseline_params['global_mean']
+    user_biases = baseline_params['user_biases'].to_dict()
+    item_biases = baseline_params['item_biases'].to_dict()
+    
+    user_bias = user_biases.get(user, 0)
+    item_bias = item_biases.get(item, 0)
+    return global_mean + user_bias + item_bias
 
 def run_item_item_cf(example_df, example_matrix):
     """Apply Item-Item CF to the example matrix"""
@@ -702,8 +753,11 @@ def user_user_cf_example(example_df, target_user, target_items=None, k=2):
         # Calculate similarity (if only 1 common item, use absolute difference)
         try:
             if len(common_items) == 1:
-                # If only one common item, use rating similarity instead of cosine
-                similarity = 1 - abs(target_ratings_array[0] - neighbor_ratings_array[0]) / 4
+                # For a single common item, use normalized rating difference
+                # This gives 1.0 for identical ratings and 0.0 for maximally different ratings
+                # assuming ratings are on a 1-5 scale
+                max_rating_diff = 4.0  # Maximum possible difference on a 1-5 scale
+                similarity = 1.0 - (abs(target_ratings_array[0] - neighbor_ratings_array[0]) / max_rating_diff)
             else:
                 similarity = 1 - cosine(target_ratings_array, neighbor_ratings_array)
                 
@@ -795,10 +849,12 @@ def item_item_cf_example(example_df, target_user, target_items=None, k=2):
             # Extract ratings
             common_users_list = list(common_users)
             try:
-                if len(common_users) == 1:
-                    # If only one common user, use rating similarity instead of cosine
-                    user = common_users_list[0]
-                    similarity = 1 - abs(target_item_dict[user] - rated_item_dict[user]) / 4
+                if len(common_items) == 1:
+                    # For a single common item, use normalized rating difference
+                    # This gives 1.0 for identical ratings and 0.0 for maximally different ratings
+                    # assuming ratings are on a 1-5 scale
+                    max_rating_diff = 4.0  # Maximum possible difference on a 1-5 scale
+                    similarity = 1.0 - (abs(target_ratings_array[0] - neighbor_ratings_array[0]) / max_rating_diff)
                 else:
                     target_item_array = np.array([target_item_dict[user] for user in common_users_list])
                     rated_item_array = np.array([rated_item_dict[user] for user in common_users_list])
