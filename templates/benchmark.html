@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendations & Benchmark</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Movie Recommender</h1>
+            <p>Discover your next favorite films with AI-powered recommendations</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="results-section">
+            <h2 class="section-title">Your Recommendations</h2>
+            
+            <div class="method-info">
+                <p>
+                    <strong>Method used:</strong> 
+                    {% if method == 'user_user' %}
+                        User-User Collaborative Filtering
+                    {% elif method == 'item_item' %}
+                        Item-Item Collaborative Filtering
+                    {% else %}
+                        Global Baseline Estimate
+                    {% endif %}
+                </p>
+                <p><strong>Processing time:</strong> {{ processing_time }} seconds</p>
+            </div>
+
+            <div class="recommendation-list">
+                {% for movie in recommendations %}
+                <div class="recommendation-item">
+                    <h3 class="recommendation-title">{{ movie.title }}</h3>
+                    <span class="recommendation-score">Predicted rating: {{ movie.score }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="benchmark-section">
+            <h2 class="section-title">Algorithm Benchmarking</h2>
+            
+            <div class="benchmark-chart">
+                <img src="{{ chart_data }}" alt="Performance Comparison Chart">
+            </div>
+
+            <div class="benchmark-data">
+                {% for method_name, data in performance.items() %}
+                <div class="benchmark-card">
+                    <h3 class="benchmark-title">
+                        {% if method_name == 'user_user' %}
+                            User-User CF
+                        {% elif method_name == 'item_item' %}
+                            Item-Item CF
+                        {% else %}
+                            Global Baseline
+                        {% endif %}
+                    </h3>
+                    <div class="benchmark-value">{{ data.processing_time }}s</div>
+                    <p><strong>Recommendations found:</strong> {{ data.num_recommendations }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="rated-movies-section">
+            <h2 class="section-title">Movies You Rated</h2>
+            
+            <div class="recommendation-list">
+                {% for movie in rated_movies %}
+                <div class="recommendation-item">
+                    <h3 class="recommendation-title">{{ movie.title }}</h3>
+                    <span class="recommendation-score">Your rating: {{ movie.rating }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="text-center" style="margin-top: 3rem;">
+            <a href="/" class="back-button">Rate More Movies</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Movie Recommender - Powered by AI & Collaborative Filtering</p>
+        </div>
+    </footer>
+</body>
+</html>

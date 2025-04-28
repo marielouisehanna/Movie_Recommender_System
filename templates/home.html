@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Movie Recommender</h1>
+            <p>Discover your next favorite films with AI-powered recommendations</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="instructions">
+            <h2>How it works</h2>
+            <ol>
+                <li>Rate several movies you've watched (1-5 stars)</li>
+                <li>Select your preferred recommendation algorithm</li>
+                <li>Get personalized movie recommendations</li>
+                <li>View detailed algorithm performance comparison</li>
+            </ol>
+        </section>
+
+        <form action="/recommend" method="post">
+            <div class="method-selection">
+                <label for="method">Recommendation Algorithm:</label>
+                <select name="method" id="method">
+                    <option value="user_user">User-User Collaborative Filtering</option>
+                    <option value="item_item">Item-Item Collaborative Filtering</option>
+                    <option value="baseline">Global Baseline Estimate</option>
+                </select>
+            </div>
+
+            <h2>Rate Movies You've Watched</h2>
+            <p>Rate at least 3 movies to get personalized recommendations:</p>
+
+            <div class="movie-grid">
+                {% for movie in movies %}
+                <div class="movie-card">
+                    <h3 class="movie-title">{{ movie.title }}</h3>
+                    <div class="movie-rating">
+                        <span class="rating-label">Your Rating:</span>
+                        <div class="star-rating">
+                            <input type="number" name="rating_{{ movie.movieId }}" min="1" max="5" step="0.5" class="rating-value" placeholder="1-5">
+                            <span>/5</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit">Get Recommendations</button>
+        </form>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Movie Recommender - Powered by AI & Collaborative Filtering</p>
+        </div>
+    </footer>
+</body>
+</html>
