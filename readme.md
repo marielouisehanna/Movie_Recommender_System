@@ -1,6 +1,8 @@
 # Movie Recommendation System
 
 A Flask web application that recommends movies based on user ratings using different collaborative filtering algorithms.
+## Download The MovieLens Dataset:
+https://grouplens.org/datasets/movielens/
 
 ## Overview
 
